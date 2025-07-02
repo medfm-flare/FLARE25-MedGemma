@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  qwenvl-inference:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qwenvl-inference:latest
+    container_name: qwenvl-inference-container
+
+    # GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+    # Environment variables
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - DATASET_PATH=/app/input/organized_dataset
+      - OUTPUT_PATH=/app/output
+      - MODEL_NAME=Qwen/Qwen2.5-VL-7B-Instruct
+      - LORA_WEIGHTS=${LORA_WEIGHTS:-leoyinn/flare25-qwen2.5vl}
+      - MAX_TOKENS=${MAX_TOKENS:-256}
+      - BATCH_SIZE=${BATCH_SIZE:-1}
+      - DEVICE=auto
+      - VERBOSE=${VERBOSE:-false}
+      - PYTHONUNBUFFERED=1
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+      - HF_HOME=/root/.cache/huggingface
+
+    # Volume mounts
+    volumes:
+      # Input dataset (required)
+      - ${DATASET_PATH:-./organized_dataset}:/app/input/organized_dataset:ro
+
+      # Output directory (required)
+      - ${OUTPUT_PATH:-./output}:/app/output
+
+      # LoRA weights (optional)
+      - ${LORA_WEIGHTS_PATH:-./empty}:/app/lora:ro
+
+      # Model cache (optional - for persistence)
+      - ${MODEL_CACHE_PATH:-./model_cache}:/root/.cache/huggingface
+
+      # Logs (optional)
+      - ${LOGS_PATH:-./logs}:/app/logs
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import torch; print('GPU available:', torch.cuda.is_available())" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits
+    mem_limit: 32g
+    memswap_limit: 32g
+    shm_size: 8g
+
+    # Working directory
+    working_dir: /app
+    # Command override (optional)
+    # command: ["./docker_inference.sh"]
+
+    # Optional: Monitoring service
+  nvidia-smi:
+    image: nvidia/cuda:11.8-base-ubuntu20.04
+    container_name: nvidia-monitor
+    profiles:
+      - monitoring
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y watch &&
+        watch -n 1 nvidia-smi
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    restart: unless-stopped
+
+# Named volumes (optional)
+volumes:
+  model_cache:
+    driver: local
+  output_data:
+    driver: local
+  logs_data:
+    driver: local
+
+# Networks (optional)
+networks:
+  qwenvl-net:
+    driver: bridge
