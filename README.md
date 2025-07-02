@@ -201,25 +201,25 @@ For challenge submission, use the automatic dataset discovery:
 ```bash
 # Using fine-tuned model
 python inference.py \
-    --dataset_path organized_dataset \
+    --dataset_path path/to/dataset \
     --lora_weights finetuned_medgemma/final \
     --output_file predictions.json
 
 # Using base model only
 python inference.py \
-    --dataset_path organized_dataset \
+    --dataset_path path/to/dataset \
     --model_name google/medgemma-4b-it \
     --output_file predictions.json
 ```
 
-This automatically finds all `*_questions_val.json` files in `validation-hidden/` and outputs `predictions.json`.
+This automatically finds all `*_questions_val.json` files in `dataset_path` and outputs `predictions.json`.
 
 #### Command Line Options
 
 ```bash
 python inference.py [-h] --dataset_path DATASET_PATH [--model_name MODEL_NAME] [--lora_weights LORA_WEIGHTS]
                     [--device {cuda,cpu,auto}] [--no_quantize] [--output_file OUTPUT_FILE] [--batch_size BATCH_SIZE]
-                    [--max_tokens MAX_TOKENS] [--temperature TEMPERATURE] [--verbose]
+                    [--max_tokens MAX_TOKENS] [--verbose]
 ```
 
 **Required:**
@@ -265,17 +265,9 @@ cd docker_deployment
 
 # Run inference
 docker run --gpus all \
-    -v $(pwd)/organized_dataset:/app/input/organized_dataset \
+    -v $(pwd)/path/to/dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
     --rm medgemma-inference:latest
-```
-
-### Docker Compose
-
-```bash
-# Run using docker-compose
-cd docker_deployment
-docker-compose up
 ```
 
 For detailed Docker instructions, see [docker_deployment/README.md](docker_deployment/README.md).
@@ -287,7 +279,6 @@ For detailed Docker instructions, see [docker_deployment/README.md](docker_deplo
 - **Fine-tuning**: QLoRA (4-bit quantization)
 - **Training Data**: All 19 FLARE 2025 datasets
 - **Parameters**: ~4B base + LoRA adapters
-- **Download**: [Coming Soon]
 
 ## Key Features
 
