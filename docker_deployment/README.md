@@ -2,23 +2,12 @@
 
 This folder contains Docker deployment files for the FLARE 2025 Medical Multimodal VQA Challenge using MedGemma with fine-tuned adapters.
 
-## Quick Start with Pre-built Image
-
-If you have the pre-built Docker image (`medgemma-flare2025.tar.gz`), you can skip the build step:
-
-### Load Pre-built Image
-
-```bash
-# Load the Docker image (if you have the tar.gz file)
-docker load -i medgemma-flare2025.tar.gz
-```
-
 ### Run Inference
 
 ```bash
 # Run inference on your dataset
 docker run --gpus all \
-    -v $(pwd)/organized_dataset:/app/input/organized_dataset \
+    -v $(pwd)/path/to/dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
     --rm medgemma-inference:latest
 ```
@@ -51,39 +40,15 @@ chmod +x docker_build.sh
 
 ## Running Inference
 
-### Method 1: Direct Docker Run
+### Direct Docker Run
 
 ```bash
 # Run inference with volume mounts for input and output
 docker run --gpus all \
-    -v $(pwd)/organized_dataset:/app/input/organized_dataset \
+    -v $(pwd)/path/to/dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
+    -e HF_TOKEN=your-token \
     --rm medgemma-inference:latest
-```
-
-### Method 2: Using Docker Compose
-
-```bash
-# Set required environment variables
-export HF_TOKEN="your_huggingface_token_here"
-export DATASET_PATH="/path/to/your/organized_dataset"
-export OUTPUT_PATH="/path/to/output"
-
-# Run with fine-tuned model (default)
-docker-compose up
-
-# Run with base model
-MODEL_NAME=google/medgemma-4b-it docker-compose up
-```
-
-### Method 3: Interactive Mode
-
-```bash
-# Run in interactive mode for debugging
-docker run --gpus all -it \
-    -v $(pwd)/organized_dataset:/app/input/organized_dataset \
-    -v $(pwd)/predictions:/app/output \
-    medgemma-inference:latest /bin/bash
 ```
 
 ## Expected Input/Output Structure
@@ -194,13 +159,6 @@ docker run --gpus all --rm nvidia/cuda:11.8-base nvidia-smi
 - Reduce batch size by setting environment variable: `-e BATCH_SIZE="1"`
 - Ensure no other GPU processes are running
 - Check available GPU memory: `nvidia-smi`
-
-### Model Download Issues
-If model download fails during build, try:
-```bash
-# Build with no cache to force re-download
-docker build --no-cache -f Dockerfile -t medgemma-inference .
-```
 
 ## Saving and Distributing the Image
 
