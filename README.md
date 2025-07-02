@@ -347,6 +347,7 @@ The MedGemma model shows significant improvements over the base google/medgemma-
 
 ![Model Performance Comparison](assets/model_performace_comparisons.png)
 
+
 #### Primary Metrics Improvements (Base → Fine-tuned):
 
 | Task Type                      | Primary Metric      | Base Model | Fine-tuned | Improvement |
