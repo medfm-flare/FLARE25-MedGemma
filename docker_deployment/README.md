@@ -1,16 +1,16 @@
-# FLARE 2025 QwenVL Docker Deployment
+# FLARE 2025 MedGemma Docker Deployment
 
-This folder contains Docker deployment files for the FLARE 2025 Medical Multimodal VQA Challenge using QwenVL with fine-tuned adapters.
+This folder contains Docker deployment files for the FLARE 2025 Medical Multimodal VQA Challenge using MedGemma with fine-tuned adapters.
 
 ## Quick Start with Pre-built Image
 
-If you have the pre-built Docker image (`qwenvl-flare2025.tar.gz`), you can skip the build step:
+If you have the pre-built Docker image (`medgemma-flare2025.tar.gz`), you can skip the build step:
 
 ### Load Pre-built Image
 
 ```bash
 # Load the Docker image (if you have the tar.gz file)
-docker load -i qwenvl-flare2025.tar.gz
+docker load -i medgemma-flare2025.tar.gz
 ```
 
 ### Run Inference
@@ -20,7 +20,7 @@ docker load -i qwenvl-flare2025.tar.gz
 docker run --gpus all \
     -v $(pwd)/organized_dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
-    --rm qwenvl-inference:latest
+    --rm medgemma-inference:latest
 ```
 
 ## Build Docker from Source
@@ -36,10 +36,10 @@ docker run --gpus all \
 
 ```bash
 # Build the Docker image
-docker build -f Dockerfile -t qwenvl-inference .
+docker build -f Dockerfile -t medgemma-inference .
 ```
 
-> Note: Don't forget the `.` at the end. The build process will automatically download the FLARE 2025 fine-tuned model and base QwenVL model.
+> Note: Don't forget the `.` at the end. Models will be downloaded at runtime when needed, making the build process faster and more flexible.
 
 ### Alternative: Use Build Script
 
@@ -58,14 +58,22 @@ chmod +x docker_build.sh
 docker run --gpus all \
     -v $(pwd)/organized_dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
-    --rm qwenvl-inference:latest
+    --rm medgemma-inference:latest
 ```
 
 ### Method 2: Using Docker Compose
 
 ```bash
-# Run using docker-compose (modify paths in docker-compose.yml as needed)
+# Set required environment variables
+export HF_TOKEN="your_huggingface_token_here"
+export DATASET_PATH="/path/to/your/organized_dataset"
+export OUTPUT_PATH="/path/to/output"
+
+# Run with fine-tuned model (default)
 docker-compose up
+
+# Run with base model
+MODEL_NAME=google/medgemma-4b-it docker-compose up
 ```
 
 ### Method 3: Interactive Mode
@@ -75,7 +83,7 @@ docker-compose up
 docker run --gpus all -it \
     -v $(pwd)/organized_dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
-    qwenvl-inference:latest /bin/bash
+    medgemma-inference:latest /bin/bash
 ```
 
 ## Expected Input/Output Structure
@@ -102,20 +110,54 @@ organized_dataset/
 ### Output
 The inference will generate a `predictions.json` file in the output directory containing the model's answers to all questions.
 
+## Authentication (Required)
+
+### HuggingFace Token Required
+
+**⚠️ Important**: All MedGemma models (including fine-tuned adapters) require access to the gated base model `google/medgemma-4b-it`. You **must** have a HuggingFace token and access approval.
+
+**Steps to get access:**
+
+1. **Get HuggingFace Token**: Go to [HuggingFace Settings](https://huggingface.co/settings/tokens) and create a token
+2. **Request Access**: Apply for access to [`google/medgemma-4b-it`](https://huggingface.co/google/medgemma-4b-it)
+3. **Wait for Approval**: Google will review your request (can take a few days)
+4. **Use Token**: Pass it as environment variable
+
+### Usage Examples
+
+```bash
+# Set your HuggingFace token
+export HF_TOKEN="your_huggingface_token_here"
+
+# Using fine-tuned MedGemma adapter (default)
+docker run --gpus all \
+    -e HF_TOKEN="$HF_TOKEN" \
+    -v $(pwd)/organized_dataset:/app/input/organized_dataset \
+    -v $(pwd)/predictions:/app/output \
+    --rm medgemma-inference:latest
+
+# Using base MedGemma model
+docker run --gpus all \
+    -e HF_TOKEN="$HF_TOKEN" \
+    -e MODEL_NAME="google/medgemma-4b-it" \
+    -v $(pwd)/organized_dataset:/app/input/organized_dataset \
+    -v $(pwd)/predictions:/app/output \
+    --rm medgemma-inference:latest
+```
+
 ## Configuration Options
 
 The Docker container supports several environment variables for configuration:
 
 ```bash
-# Custom model configuration
+# Custom configuration examples
 docker run --gpus all \
-    -e FLARE_MODEL_PATH="/app/models/flare25-qwen2.5vl" \
-    -e BASE_MODEL_PATH="/app/models/Qwen/Qwen2.5-VL-7B-Instruct" \
-    -e MAX_NEW_TOKENS="512" \
-    -e TEMPERATURE="0.0" \
+    -e MODEL_NAME="leoyinn/flare25-medgemma" \
+    -e MAX_TOKENS="512" \
+    -e VERBOSE="true" \
     -v $(pwd)/organized_dataset:/app/input/organized_dataset \
     -v $(pwd)/predictions:/app/output \
-    --rm qwenvl-inference:latest
+    --rm medgemma-inference:latest
 ```
 
 ## Memory Requirements
@@ -130,7 +172,7 @@ Run the test script to verify everything is working:
 
 ```bash
 # Test the Docker container
-docker run --gpus all --rm qwenvl-inference:latest python test_installation.py
+docker run --gpus all --rm medgemma-inference:latest python test_installation.py
 ```
 
 ## Troubleshooting
@@ -157,7 +199,7 @@ docker run --gpus all --rm nvidia/cuda:11.8-base nvidia-smi
 If model download fails during build, try:
 ```bash
 # Build with no cache to force re-download
-docker build --no-cache -f Dockerfile -t qwenvl-inference .
+docker build --no-cache -f Dockerfile -t medgemma-inference .
 ```
 
 ## Saving and Distributing the Image
@@ -166,23 +208,23 @@ docker build --no-cache -f Dockerfile -t qwenvl-inference .
 
 ```bash
 # Save the Docker image for distribution
-docker save qwenvl-inference:latest -o qwenvl-flare2025.tar
-gzip qwenvl-flare2025.tar
+docker save medgemma-inference:latest -o medgemma-flare2025.tar
+gzip medgemma-flare2025.tar
 ```
 
 ### Load Docker Image on Another Machine
 
 ```bash
 # Load the Docker image on target machine
-docker load -i qwenvl-flare2025.tar.gz
+docker load -i medgemma-flare2025.tar.gz
 ```
 
 ## Model Information
 
 This Docker container uses:
-- **Base Model**: Qwen/Qwen2.5-VL-7B-Instruct
-- **Fine-tuned Adapter**: leoyinn/flare25-qwen2.5vl
-- **Training Data**: 19 medical datasets across 8 modalities
+- **Base Model**: google/medgemma-4b-it
+- **Fine-tuned Adapter**: leoyinn/flare25-medgemma
+- **Training Data**: 19 medical datasets across 7 modalities (CT, MRI, X-ray, Ultrasound, Fundus, Pathology, Endoscopy)
 - **LoRA Configuration**: r=16, alpha=32
 
 ## Files in this Directory
@@ -192,9 +234,7 @@ This Docker container uses:
 - `docker_inference.sh`: Container entrypoint script
 - `docker-compose.yml`: Docker Compose configuration
 - `inference.py`: Main inference script
-- `download_models.py`: Model download utility
 - `requirements.txt`: Python dependencies
-- `test_docker.sh`: Docker testing script
 - `.dockerignore`: Docker build ignore patterns
 
 ## Citation

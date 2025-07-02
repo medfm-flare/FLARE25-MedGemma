@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# QwenVL Docker Build Script
+# MedGemma Docker Build Script
 # FLARE 2025 Medical Multimodal VQA Challenge
 
 set -e
 
 echo "========================================="
-echo "Building QwenVL Inference Docker Image"
+echo "Building MedGemma Inference Docker Image"
 echo "========================================="
 
 # Default values
-IMAGE_NAME=${IMAGE_NAME:-"qwenvl-inference"}
+IMAGE_NAME=${IMAGE_NAME:-"medgemma-inference"}
 IMAGE_TAG=${IMAGE_TAG:-"latest"}
 CONTEXT_DIR=${CONTEXT_DIR:-"."}
 NO_CACHE=${NO_CACHE:-"false"}
@@ -72,15 +72,15 @@ if [ $? -eq 0 ]; then
     docker images "$IMAGE_NAME:$IMAGE_TAG" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
     
     echo ""
-    echo "To run the container:"
-    echo "1. With base model only:"
-    echo "   docker run --gpus all -v /path/to/dataset:/app/input/organized_dataset -v /path/to/output:/app/output $IMAGE_NAME:$IMAGE_TAG"
+    echo "To run the container (HF_TOKEN required for all MedGemma models):"
+    echo "1. With fine-tuned MedGemma adapter (default):"
+    echo "   docker run --gpus all -e HF_TOKEN=your_token -v /path/to/dataset:/app/input/organized_dataset -v /path/to/output:/app/output $IMAGE_NAME:$IMAGE_TAG"
     echo ""
-    echo "2. With LoRA weights:"
-    echo "   docker run --gpus all -v /path/to/dataset:/app/input/organized_dataset -v /path/to/lora:/app/lora -v /path/to/output:/app/output -e LORA_WEIGHTS=/app/lora $IMAGE_NAME:$IMAGE_TAG"
+    echo "2. With base MedGemma model:"
+    echo "   docker run --gpus all -e HF_TOKEN=your_token -e MODEL_NAME=google/medgemma-4b-it -v /path/to/dataset:/app/input/organized_dataset -v /path/to/output:/app/output $IMAGE_NAME:$IMAGE_TAG"
     echo ""
-    echo "3. With custom settings:"
-    echo "   docker run --gpus all -v /path/to/dataset:/app/input/organized_dataset -v /path/to/output:/app/output -e MAX_TOKENS=512 -e VERBOSE=true $IMAGE_NAME:$IMAGE_TAG"
+    echo "3. With local LoRA weights:"
+    echo "   docker run --gpus all -e HF_TOKEN=your_token -v /path/to/dataset:/app/input/organized_dataset -v /path/to/lora:/app/lora -v /path/to/output:/app/output -e LORA_WEIGHTS=/app/lora $IMAGE_NAME:$IMAGE_TAG"
     
     echo "========================================="
 else

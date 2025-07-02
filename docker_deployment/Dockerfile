@@ -1,4 +1,4 @@
-# QwenVL Medical Inference Docker Image
+# MedGemma Medical Inference Docker Image
 # FLARE 2025 Medical Multimodal VQA Challenge
 FROM pytorch/pytorch:2.1.0-cuda11.8-cudnn8-devel
 
@@ -34,9 +34,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Pre-download the FLARE 2025 fine-tuned model during build
-COPY download_models.py /tmp/download_models.py
-RUN python /tmp/download_models.py && rm /tmp/download_models.py
+# Models will be downloaded at runtime when needed
+# This avoids authentication issues during build and makes the image more flexible
 
 # Create application directory
 WORKDIR /app

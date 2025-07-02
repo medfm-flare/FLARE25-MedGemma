@@ -1,23 +1,57 @@
 #!/bin/bash
 
-# QwenVL Docker Inference Script
+# MedGemma Docker Inference Script
 # FLARE 2025 Medical Multimodal VQA Challenge
 
 set -e  # Exit on any error
 
 echo "========================================="
-echo "FLARE 2025 QwenVL Inference Container"
+echo "FLARE 2025 MedGemma Inference Container"
 echo "========================================="
 
 # Environment setup
 export PYTHONPATH=/app:$PYTHONPATH
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 
+# HuggingFace authentication (required for MedGemma)
+if [ ! -z "$HF_TOKEN" ]; then
+    echo "✅ HF_TOKEN provided - authenticating with HuggingFace..."
+    if python -c "
+from huggingface_hub import login
+import os
+import sys
+try:
+    login(token=os.environ.get('HF_TOKEN'))
+    print('✅ Successfully authenticated with HuggingFace')
+    sys.exit(0)
+except Exception as e:
+    print(f'❌ Failed to authenticate: {e}')
+    sys.exit(1)
+"; then
+        echo "Authentication successful"
+    else
+        echo "❌ Authentication failed - invalid token or no internet connection"
+        echo "Please check your HF_TOKEN and ensure you have access to google/medgemma-4b-it"
+        exit 1
+    fi
+else
+    echo "❌ ERROR: HF_TOKEN is required for MedGemma models"
+    echo ""
+    echo "⚠️  All MedGemma models require access to the gated base model google/medgemma-4b-it"
+    echo "Steps to fix this:"
+    echo "  1. Get token from: https://huggingface.co/settings/tokens"
+    echo "  2. Request access to: https://huggingface.co/google/medgemma-4b-it"
+    echo "  3. Wait for approval (can take a few days)"
+    echo "  4. Pass token with: -e HF_TOKEN=your_token_here"
+    echo ""
+    exit 1
+fi
+
 # Default values
 DATASET_PATH=${DATASET_PATH:-"/app/input/organized_dataset"}
 OUTPUT_PATH=${OUTPUT_PATH:-"/app/output"}
-MODEL_NAME=${MODEL_NAME:-"Qwen/Qwen2.5-VL-7B-Instruct"}
-LORA_WEIGHTS=${LORA_WEIGHTS:-"leoyinn/flare25-qwen2.5vl"}
+MODEL_NAME=${MODEL_NAME:-"leoyinn/flare25-medgemma"}
+LORA_WEIGHTS=${LORA_WEIGHTS:-""}
 MAX_TOKENS=${MAX_TOKENS:-256}
 BATCH_SIZE=${BATCH_SIZE:-1}
 DEVICE=${DEVICE:-"auto"}

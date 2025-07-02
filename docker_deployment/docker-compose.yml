@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  qwenvl-inference:
+  medgemma-inference:
     build:
       context: .
       dockerfile: Dockerfile
-    image: qwenvl-inference:latest
-    container_name: qwenvl-inference-container
+    image: medgemma-inference:latest
+    container_name: medgemma-inference-container
 
     # GPU support
     deploy:
@@ -22,8 +22,8 @@ services:
       - CUDA_VISIBLE_DEVICES=0
       - DATASET_PATH=/app/input/organized_dataset
       - OUTPUT_PATH=/app/output
-      - MODEL_NAME=Qwen/Qwen2.5-VL-7B-Instruct
-      - LORA_WEIGHTS=${LORA_WEIGHTS:-leoyinn/flare25-qwen2.5vl}
+      - MODEL_NAME=leoyinn/flare25-medgemma
+      - LORA_WEIGHTS=${LORA_WEIGHTS:-}
       - MAX_TOKENS=${MAX_TOKENS:-256}
       - BATCH_SIZE=${BATCH_SIZE:-1}
       - DEVICE=auto
@@ -31,6 +31,7 @@ services:
       - PYTHONUNBUFFERED=1
       - TRANSFORMERS_CACHE=/root/.cache/huggingface
       - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN} # Required: For accessing MedGemma base model
 
     # Volume mounts
     volumes:
@@ -101,5 +102,5 @@ volumes:
 
 # Networks (optional)
 networks:
-  qwenvl-net:
+  medgemma-net:
     driver: bridge
