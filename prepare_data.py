@@ -184,7 +184,7 @@ def load_images_and_questions(base_dir, dataset_name, split, task_type, category
 
 def create_formatted_prompt(sample, task_type):
     """
-    Create formatted messages in Qwen2.5-VL format, supporting multiple images
+    Create formatted messages in MedGemma format, supporting multiple images
     """
     # Create content array with images and text
     content = []
@@ -196,8 +196,7 @@ def create_formatted_prompt(sample, task_type):
     
     # Add the text question
     content.append({"type": "text", "text": sample['question']})
-    
-    # Create the messages format as expected by Qwen2.5-VL
+
     messages = [
         {
             "role": "user",
@@ -495,9 +494,9 @@ def prepare_dataset(base_dir, dataset_configs, output_dir, max_samples=None):
     return len(all_train_data), len(all_val_data), len(all_test_data)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Prepare datasets for QwenVL fine-tuning")
+    parser = argparse.ArgumentParser(description="Prepare datasets for medgemma fine-tuning")
     parser.add_argument("--base_dir", type=str, default="organized_dataset", help="Base directory of the dataset")
-    parser.add_argument("--output_dir", type=str, default="processed_data_qwenvl", help="Output directory")
+    parser.add_argument("--output_dir", type=str, default="processed_data_medgemma", help="Output directory")
     parser.add_argument("--max_samples", type=int, default=None, help="Maximum number of samples per dataset (for prototyping, default: use all data)")
     parser.add_argument("--use_subset", action="store_true", help="Use only the original 3 datasets for testing")
     args = parser.parse_args()

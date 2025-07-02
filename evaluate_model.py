@@ -1305,7 +1305,7 @@ def evaluate_model(args):
             # Create output directory
             os.makedirs(model_config['output_dir'], exist_ok=True)
             
-            # Load MedGemma model - KEY DIFFERENCE FROM QWEN
+            # Load MedGemma model
             logger.info(f"Loading MedGemma model from {model_config['model_path']}")
             if model_config['use_lora']:
                 # Load base model
@@ -1320,7 +1320,7 @@ def evaluate_model(args):
                 logger.info(f"Loading LoRA weights from {model_config['lora_weights']}")
                 model = PeftModel.from_pretrained(model, model_config['lora_weights'])
             else:
-                # Load model directly - Use AutoModelForImageTextToText instead of Qwen2_5_VLForConditionalGeneration
+                # Load model directly
                 model = AutoModelForImageTextToText.from_pretrained(
                     model_config['model_path'],
                     torch_dtype=torch.bfloat16,
@@ -2189,7 +2189,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_name_or_path", type=str, default="google/medgemma-4b-it", 
                        help="MedGemma model path or HuggingFace model ID")
     parser.add_argument("--lora_weights", type=str, default=None, help="Path to LoRA weights (optional)")
-    parser.add_argument("--processed_data_dir", type=str, default="processed_data_qwenvl", help="Directory with processed datasets")
+    parser.add_argument("--processed_data_dir", type=str, default="processed_data_medgemma", help="Directory with processed datasets")
     parser.add_argument("--output_dir", type=str, default="evaluation_results/medgemma", help="Output directory for evaluation results")
     parser.add_argument("--max_eval_samples", type=int, default=0, help="Maximum number of samples to evaluate per task (0 = evaluate all)")
     parser.add_argument("--force_cpu", action="store_true", help="Force evaluation on CPU if no GPU is available")
