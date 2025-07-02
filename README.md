@@ -6,7 +6,7 @@ This repository provides a baseline implementation for the FLARE 2025 2D multimo
 
 The pre-trained baseline model will be available at:
 
-🤗 **Model**: [MedGemma FLARE2025 Baseline]([https://huggingface.co/](https://huggingface.co/leoyinn/flare25-medgemma))
+🤗 **Model**: [MedGemma FLARE2025 Baseline](https://huggingface.co/leoyinn/flare25-medgemma)
 
 ## Overview
 
