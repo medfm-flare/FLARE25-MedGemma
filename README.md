@@ -345,8 +345,6 @@ For detailed Docker instructions, see [docker_deployment/README.md](docker_deplo
 
 The MedGemma model shows significant improvements over the base google/medgemma-4b-it model across all FLARE 2025 tasks:
 
-![Model Performance Comparison](model_performace_comparison.png)
-
 #### Primary Metrics Improvements (Base → Fine-tuned):
 
 | Task Type                      | Primary Metric      | Base Model | Fine-tuned | Improvement |
